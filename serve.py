@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """SPA static server: unknown paths fall back to index.html (like Vercel rewrites)."""
 from __future__ import annotations
